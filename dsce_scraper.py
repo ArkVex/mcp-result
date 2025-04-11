@@ -26,7 +26,7 @@ BRANCH_CODES = [
 
 class DsceResultScraper:
     def __init__(self):
-        self.base_url = os.getenv('USN_URL', 'https://www.dsce.edu.in/results')
+        self.base_url = os.getenv('USN_URL', 'http://14.99.184.178:8080/birt/frameset')
         self.headers = {
             'User-Agent': 'Mozilla/5.0',
             'Accept': 'application/pdf'
@@ -45,9 +45,15 @@ class DsceResultScraper:
         try:
             await self.init_session()
             os.makedirs(output_dir, exist_ok=True)
-            url = f"{self.base_url}?USN={usn}"
             
-            async with self.session.get(url) as response:
+            # Construct the URL with the correct parameters
+            params = {
+                '__report': 'mydsi/exam/Exam_Result_Sheet_dsce.rptdesign',
+                '__format': 'pdf',
+                'USN': usn.upper()
+            }
+            
+            async with self.session.get(self.base_url, params=params) as response:
                 if response.status != 200:
                     logger.warning(f"Failed to fetch PDF for {usn}. Status: {response.status}")
                     return {
